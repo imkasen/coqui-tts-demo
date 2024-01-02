@@ -58,7 +58,7 @@ def run_tts(
 
 
 if __name__ == "__main__":
-    # Gradio 组件
+    # Gradio Interface
     # Inputs
     text_box = gr.Textbox(label="输入", placeholder="输入用于语音合成的文本内容", lines=5)
     model_name_box = gr.Dropdown(
@@ -75,10 +75,7 @@ if __name__ == "__main__":
         choices=["en", "zh"],
     )
     # Outputs
-    output_audio_box = gr.Audio(
-        label="语言合成结果",
-        autoplay=True,
-    )
+    output_audio_box = gr.Audio(label="语言合成结果")
 
     # UI 界面
     demo = gr.Interface(
