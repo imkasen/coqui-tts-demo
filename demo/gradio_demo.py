@@ -57,39 +57,39 @@ def run_tts(
     return tts.synthesizer.output_sample_rate, np.array(wav)
 
 
+# Gradio Interface
+# Inputs
+text_box = gr.Textbox(label="输入", placeholder="输入用于语音合成的文本内容", lines=5)
+model_name_box = gr.Dropdown(
+    label="模型",
+    info="选择需要使用的模型",
+    choices=[
+        "tts_models/multilingual/multi-dataset/xtts_v2",
+        "tts_models/zh-CN/baker/tacotron2-DDC-GST",
+    ],
+)
+speaker_wav_box = gr.Audio(label="语言克隆文件（可选）", type="filepath")
+language_box = gr.Radio(
+    label="语言（可选）",
+    choices=["en", "zh"],
+)
+# Outputs
+output_audio_box = gr.Audio(label="语言合成结果")
+
+# UI 界面
+demo = gr.Interface(
+    fn=run_tts,
+    inputs=[
+        text_box,
+        model_name_box,
+        speaker_wav_box,
+        language_box,
+    ],
+    outputs=output_audio_box,
+    allow_flagging="never",
+    title="Coqui.ai TTS Interface Demo",
+    article="_注：只有多语言模型需要**上传语音克隆文件**和**选择语言**。_",
+).queue()
+
 if __name__ == "__main__":
-    # Gradio Interface
-    # Inputs
-    text_box = gr.Textbox(label="输入", placeholder="输入用于语音合成的文本内容", lines=5)
-    model_name_box = gr.Dropdown(
-        label="模型",
-        info="选择需要使用的模型",
-        choices=[
-            "tts_models/multilingual/multi-dataset/xtts_v2",
-            "tts_models/zh-CN/baker/tacotron2-DDC-GST",
-        ],
-    )
-    speaker_wav_box = gr.Audio(label="语言克隆文件（可选）", type="filepath")
-    language_box = gr.Radio(
-        label="语言（可选）",
-        choices=["en", "zh"],
-    )
-    # Outputs
-    output_audio_box = gr.Audio(label="语言合成结果")
-
-    # UI 界面
-    demo = gr.Interface(
-        fn=run_tts,
-        inputs=[
-            text_box,
-            model_name_box,
-            speaker_wav_box,
-            language_box,
-        ],
-        outputs=output_audio_box,
-        allow_flagging="never",
-        title="Coqui.ai TTS Interface Demo",
-        article="_注：只有多语言模型需要**上传语音克隆文件**和**选择语言**。_",
-    ).queue()
-
     demo.launch(show_api=False)
