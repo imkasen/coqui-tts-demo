@@ -7,7 +7,6 @@ import numpy as np
 import requests
 
 # TODO: UI 中设置 URL，gradio 全局变量
-# TODO：无服务端时 requests 的 timeout 问题
 SERVER_URL: str = "http://127.0.0.1:8000"
 
 
