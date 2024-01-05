@@ -67,12 +67,15 @@ class XTTSV2Model:
         text: str,
         language: str,
         speaker: str | None = None,
+        speaker_wav_path: str | None = None,
     ):
         """
         语言合成
         """
         # TODO: emotion
-        wav: list[int] = self.tts.tts(text=text, language=language, speaker=speaker)
+        wav: list[int] = self.tts.tts(text=text, language=language, speaker=speaker, speaker_wav=speaker_wav_path)
+        if os.path.isfile(speaker_wav_path):  # delete the temp voice cloning file
+            os.remove(speaker_wav_path)
         # wav 先转为 ndarray，再转为 list。直接返回会导致错误
         return self.tts.synthesizer.output_sample_rate, np.array(wav).tolist()
 
@@ -105,5 +108,6 @@ class ZhTacotron2Model:
         return self.tts.synthesizer.output_sample_rate, np.array(wav).tolist()
 
 
+# 初始化实例
 xtts_v2_model = XTTSV2Model()
 zh_tacotron2_model = ZhTacotron2Model()

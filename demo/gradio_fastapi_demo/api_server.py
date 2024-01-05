@@ -3,10 +3,16 @@
 """
 
 
+import os
+import tempfile
+from typing import Any
+
+import numpy as np
 from fastapi import FastAPI, applications
 from fastapi.openapi.docs import get_swagger_ui_html
 from models import xtts_v2_model, zh_tacotron2_model
 from pydantic import BaseModel
+from scipy.io import wavfile
 
 # ===== FastAPI =====
 
@@ -39,6 +45,9 @@ class UploadContent(BaseModel):
     text: str
     language: str | None = None
     speaker: str | None = None
+    sample_rate: int | None = None
+    wav_list: list[Any] | None = None
+    dtype_name: str | None = None
 
 
 # Routers
@@ -63,10 +72,20 @@ async def xttsv2_tts(content: UploadContent):
     """
     语音合成
     """
+    tmp_wav_path: str = os.path.join(tempfile.gettempdir(), "temp_voice_cloning_file.wav")
+
+    if content.sample_rate and content.wav_list and content.dtype_name:
+        wavfile.write(
+            filename=tmp_wav_path,
+            rate=content.sample_rate,
+            data=np.array(content.wav_list).astype(content.dtype_name),
+        )
+
     return xtts_v2_model.text_to_speech(
         text=content.text,
         language=content.language,
         speaker=content.speaker,
+        speaker_wav_path=tmp_wav_path,
     )
 
 
@@ -85,5 +104,5 @@ if __name__ == "__main__":
         app="api_server:app",
         host="127.0.0.1",
         port=8000,
-        reload=True,
+        reload=False,
     )

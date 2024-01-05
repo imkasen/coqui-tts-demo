@@ -21,15 +21,25 @@ def get_xttsv2_languages(url: str):
     return requests.get(url=f"{url}/xttsv2/languages", timeout=5).json()
 
 
-def send_put_xttsv2_tts(url: str, text: str, language: str, speaker: str | None):
+def send_put_xttsv2_tts(
+    url: str,
+    text: str,
+    language: str,
+    speaker: list | str | None,
+    wav_audio: tuple[int, np.ndarray],
+):
     """
     发送 put 请求调用 XTTS v2 进行语音合成
     """
     data: dict[str, str] = {
         "text": text,
         "language": language,
-        "speaker": speaker,
+        "speaker": speaker if isinstance(speaker, str) else None,
+        "sample_rate": wav_audio[0] if wav_audio else None,
+        "wav_list": wav_audio[1].tolist() if wav_audio else None,
+        "dtype_name": wav_audio[1].dtype.name if wav_audio else None,
     }
+
     response = requests.put(url=f"{url}/xttsv2/tts", timeout=60, json=data)
     sample_rate, wav = response.json()
     return sample_rate, np.array(wav)

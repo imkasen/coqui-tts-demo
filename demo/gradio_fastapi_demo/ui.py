@@ -3,6 +3,7 @@ UI 界面
 """
 import gradio as gr
 from api_requests import get_xttsv2_languages, get_xttsv2_speakers, send_put_tacotron2_tts, send_put_xttsv2_tts
+from numpy import ndarray
 
 
 def xttsv2_list_languages(url: str) -> gr.Dropdown:
@@ -21,7 +22,13 @@ def xttsv2_list_speakers(url: str) -> gr.Dropdown:
     return gr.Dropdown(choices=list_cnt)
 
 
-def xttsv2_submit(url: str, text: str | None, language: list | str | None, speaker: list | str | None):
+def xttsv2_submit(
+    url: str,
+    text: str | None,
+    language: list | str | None,
+    speaker: list | str | None,
+    wav_audio: tuple[int, ndarray] | None,
+):
     """
     发送 put 请求
     """
@@ -29,7 +36,12 @@ def xttsv2_submit(url: str, text: str | None, language: list | str | None, speak
         raise gr.Error("文本不能为空！")
     if not language:
         raise gr.Error("语音不能为空！")
-    return send_put_xttsv2_tts(url, text, language, speaker)
+    if not speaker and not wav_audio:
+        raise gr.Error("发言者和语音克隆文件必须选择一项！")
+    if speaker and wav_audio:
+        speaker = None
+        gr.Warning("使用语音克隆文件处理语音合成，不使用发言者选项。")
+    return send_put_xttsv2_tts(url, text, language, speaker, wav_audio)
 
 
 def tacotron2_submit(url: str, text: str | None):
@@ -55,10 +67,9 @@ with gr.Blocks(title="Coqui.ai TTS Interface Demo") as demo:
         with gr.Row():
             with gr.Column(variant="panel"):
                 xttsv2_input_text = gr.Textbox(label="输入文本", placeholder="输入用于语音合成的文本内容。", lines=5)
-                languages_dropdown = gr.Dropdown(label="语音", info="选择所需要使用的语言。")
-                # TODO: 与 wav_audio 互斥
-                speakers_dropdown = gr.Dropdown(label="发言人", info="选择使用不同的输出声音。")
-                # TODO: 上传克隆文件，与 speakers 互斥
+                languages_dropdown = gr.Dropdown(label="语音", info="选择所需要使用的语言。", filterable=False)
+                speakers_dropdown = gr.Dropdown(label="发言人（可选）", info="选择使用不同的输出声音。", filterable=False)
+                speaker_wav_audio = gr.Audio(label="上传语音克隆文件（可选）")
                 with gr.Row():
                     xttsv2_clear_button = gr.ClearButton(value="清空")
                     xttsv2_submit_button = gr.Button(value="提交", variant="primary")
@@ -84,6 +95,7 @@ with gr.Blocks(title="Coqui.ai TTS Interface Demo") as demo:
             xttsv2_input_text,
             languages_dropdown,
             speakers_dropdown,
+            speaker_wav_audio,
             xttsv2_output_audio,
         ]
     )
@@ -94,6 +106,7 @@ with gr.Blocks(title="Coqui.ai TTS Interface Demo") as demo:
             xttsv2_input_text,
             languages_dropdown,
             speakers_dropdown,
+            speaker_wav_audio,
         ],
         outputs=xttsv2_output_audio,
     )
