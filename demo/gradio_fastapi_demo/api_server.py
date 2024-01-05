@@ -30,6 +30,7 @@ applications.get_swagger_ui_html = swagger_monkey_patch
 app = FastAPI(title="TTS Server", description="A Coqui.ai TTS Server", docs_url="/", redoc_url=None)
 
 
+# TODO: api 模块化
 class UploadContent(BaseModel):
     """
     tts 所需要的参数信息

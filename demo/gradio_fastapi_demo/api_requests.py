@@ -6,25 +6,22 @@ import re
 import numpy as np
 import requests
 
-# TODO: UI 中设置 URL，gradio 全局变量
-SERVER_URL: str = "http://127.0.0.1:8000"
 
-
-def get_xttsv2_speakers():
+def get_xttsv2_speakers(url: str):
     """
     获得 XTTS V2 发言者列表
     """
-    return requests.get(url=f"{SERVER_URL}/xttsv2/speakers", timeout=5).json()
+    return requests.get(url=f"{url}/xttsv2/speakers", timeout=5).json()
 
 
-def get_xttsv2_languages():
+def get_xttsv2_languages(url: str):
     """
     获得 XTTS V2 支持语音列表
     """
-    return requests.get(url=f"{SERVER_URL}/xttsv2/languages", timeout=5).json()
+    return requests.get(url=f"{url}/xttsv2/languages", timeout=5).json()
 
 
-def send_put_xttsv2_tts(text: str, language: str, speaker: str | None):
+def send_put_xttsv2_tts(url: str, text: str, language: str, speaker: str | None):
     """
     发送 put 请求调用 XTTS v2 进行语音合成
     """
@@ -33,12 +30,12 @@ def send_put_xttsv2_tts(text: str, language: str, speaker: str | None):
         "language": language,
         "speaker": speaker,
     }
-    response = requests.put(url=f"{SERVER_URL}/xttsv2/tts", timeout=60, json=data)
+    response = requests.put(url=f"{url}/xttsv2/tts", timeout=60, json=data)
     sample_rate, wav = response.json()
     return sample_rate, np.array(wav)
 
 
-def send_put_tacotron2_tts(text: str):
+def send_put_tacotron2_tts(url: str, text: str):
     """
     发送 put 请求调用 Tacotron2 进行语音合成
     """
@@ -47,6 +44,6 @@ def send_put_tacotron2_tts(text: str):
     if not bool(re.search(pattern, text[-1])):
         text += "\u3002"
 
-    response = requests.put(url=f"{SERVER_URL}/tacotron2/tts", timeout=60, json={"text": text})
+    response = requests.put(url=f"{url}/tacotron2/tts", timeout=60, json={"text": text})
     sample_rate, wav = response.json()
     return sample_rate, np.array(wav)

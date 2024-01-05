@@ -5,29 +5,56 @@ import gradio as gr
 from api_requests import get_xttsv2_languages, get_xttsv2_speakers, send_put_tacotron2_tts, send_put_xttsv2_tts
 
 
-def list_languages() -> gr.Dropdown:
+def xttsv2_list_languages(url: str) -> gr.Dropdown:
     """
     为 XTTS V2 语音下拉栏获取选项列表
     """
-    list_cnt: list[str] = get_xttsv2_languages()
+    list_cnt: list[str] = get_xttsv2_languages(url)
     return gr.Dropdown(choices=list_cnt)
 
 
-def list_speakers() -> gr.Dropdown:
+def xttsv2_list_speakers(url: str) -> gr.Dropdown:
     """
     为 XTTS V2 发言者下拉栏获取选项列表
     """
-    list_cnt: list[str] = get_xttsv2_speakers()
+    list_cnt: list[str] = get_xttsv2_speakers(url)
     return gr.Dropdown(choices=list_cnt)
 
 
+def xttsv2_submit(url: str, text: str | None, language: list | str | None, speaker: list | str | None):
+    """
+    发送 put 请求
+    """
+    if not text:
+        raise gr.Error("文本不能为空！")
+    if not language:
+        raise gr.Error("语音不能为空！")
+    return send_put_xttsv2_tts(url, text, language, speaker)
+
+
+def tacotron2_submit(url: str, text: str | None):
+    """
+    发送 put 请求
+    """
+    if not text:
+        raise gr.Error("文本不能为空！")
+    return send_put_tacotron2_tts(url, text)
+
+
+# ========
 # Gradio UI
 with gr.Blocks(title="Coqui.ai TTS Interface Demo") as demo:
+    url_text = gr.Textbox(
+        label="API 地址",
+        placeholder="输入后端 API 地址",
+        value="http://127.0.0.1:8000",
+        interactive=True,
+    )
+
     with gr.Tab("XTTS V2"):
         with gr.Row():
             with gr.Column(variant="panel"):
                 xttsv2_input_text = gr.Textbox(label="输入文本", placeholder="输入用于语音合成的文本内容。", lines=5)
-                # TODO: 为空时跳出错误信息
                 languages_dropdown = gr.Dropdown(label="语音", info="选择所需要使用的语言。")
                 # TODO: 与 wav_audio 互斥
                 speakers_dropdown = gr.Dropdown(label="发言人", info="选择使用不同的输出声音。")
@@ -40,12 +67,14 @@ with gr.Blocks(title="Coqui.ai TTS Interface Demo") as demo:
 
     # 下拉栏事件
     languages_dropdown.focus(  # pylint: disable=E1101
-        fn=list_languages,
+        fn=xttsv2_list_languages,
+        inputs=url_text,
         outputs=languages_dropdown,
         show_progress=False,
     )
     speakers_dropdown.focus(  # pylint: disable=E1101
-        fn=list_speakers,
+        fn=xttsv2_list_speakers,
+        inputs=url_text,
         outputs=speakers_dropdown,
         show_progress=False,
     )
@@ -59,8 +88,9 @@ with gr.Blocks(title="Coqui.ai TTS Interface Demo") as demo:
         ]
     )
     xttsv2_submit_button.click(  # pylint: disable=E1101
-        fn=send_put_xttsv2_tts,
+        fn=xttsv2_submit,
         inputs=[
+            url_text,
             xttsv2_input_text,
             languages_dropdown,
             speakers_dropdown,
@@ -87,8 +117,8 @@ with gr.Blocks(title="Coqui.ai TTS Interface Demo") as demo:
         ]
     )
     tacotron2_submit_button.click(  # pylint: disable=E1101
-        fn=send_put_tacotron2_tts,
-        inputs=tacotron2_input_text,
+        fn=tacotron2_submit,
+        inputs=[url_text, tacotron2_input_text],
         outputs=tacotron2_output_audio,
     )
 
