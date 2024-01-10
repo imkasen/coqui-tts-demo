@@ -21,6 +21,7 @@ def get_xttsv2_languages(url: str):
     return requests.get(url=f"{url}/xttsv2/languages", timeout=5).json()
 
 
+# TODO: 音频文件与 Blob、Base64 转换；传输加密
 def send_put_xttsv2_tts(
     url: str,
     text: str,
