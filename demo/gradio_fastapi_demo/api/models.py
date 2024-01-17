@@ -18,16 +18,6 @@ class XTTSV2Model:
     tts_models/multilingual/multi-dataset/xtts_v2
     """
 
-    _instance = None
-    _lock = threading.Lock()
-
-    def __new__(cls):
-        if cls._instance is None:
-            with cls._lock:
-                if not cls._instance:
-                    cls._instance = super().__new__(cls)
-        return cls._instance
-
     def __init__(self) -> None:
         self.model_name: str = "tts_models/multilingual/multi-dataset/xtts_v2"
 
@@ -85,16 +75,6 @@ class ZhTacotron2Model:
     tts_models/zh-CN/baker/tacotron2-DDC-GST
     """
 
-    _instance = None
-    _lock = threading.Lock()
-
-    def __new__(cls):
-        if cls._instance is None:
-            with cls._lock:
-                if not cls._instance:
-                    cls._instance = super().__new__(cls)
-        return cls._instance
-
     def __init__(self) -> None:
         self.model_name: str = "tts_models/zh-CN/baker/tacotron2-DDC-GST"
         self.tts: TTS = TTS(model_name=self.model_name).to(DEVICE)
@@ -108,6 +88,51 @@ class ZhTacotron2Model:
         return self.tts.synthesizer.output_sample_rate, np.array(wav).tolist()
 
 
-# 初始化实例
-xtts_v2_model = XTTSV2Model()
-zh_tacotron2_model = ZhTacotron2Model()
+class XTTSV2Factory:
+    """
+    XTTS v2 单例模式工厂类
+    """
+
+    _instance = None
+    _lock = threading.Lock()
+
+    def __new__(cls):
+        if cls._instance is None:
+            with cls._lock:
+                if not cls._instance:
+                    cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        self.model_instance = XTTSV2Model()
+
+    def get_model(self):
+        """
+        获得 XTTS v2 模型
+        """
+        return self.model_instance
+
+
+class ZhTacotron2Factory:
+    """
+    Tacotron2 单例模式工厂类
+    """
+
+    _instance = None
+    _lock = threading.Lock()
+
+    def __new__(cls):
+        if cls._instance is None:
+            with cls._lock:
+                if not cls._instance:
+                    cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        self.model_instance = ZhTacotron2Model()
+
+    def get_model(self):
+        """
+        获得 Tacotron2 模型
+        """
+        return self.model_instance

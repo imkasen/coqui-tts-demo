@@ -7,13 +7,16 @@ import tempfile
 from typing import Any
 
 import numpy as np
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from scipy.io import wavfile
 
-from .models import xtts_v2_model, zh_tacotron2_model
+from .models import XTTSV2Factory, XTTSV2Model, ZhTacotron2Factory, ZhTacotron2Model
 
 api = APIRouter()
+
+xttsv2_factory = XTTSV2Factory()
+zhtacotron2_factory = ZhTacotron2Factory()
 
 
 class UploadContent(BaseModel):
@@ -31,23 +34,23 @@ class UploadContent(BaseModel):
 
 # Routers
 @api.get(path="/xttsv2/speakers", response_model=list[str])
-async def get_xttsv2_speakers() -> list[str]:
+async def get_xttsv2_speakers(model: XTTSV2Model = Depends(xttsv2_factory.get_model)) -> list[str]:
     """
     获得 XTTS v2 模型所支持的发言者列表
     """
-    return xtts_v2_model.get_speakers()
+    return model.get_speakers()
 
 
 @api.get(path="/xttsv2/languages", response_model=list[str])
-async def get_xttsv2_languages() -> list[str]:
+async def get_xttsv2_languages(model: XTTSV2Model = Depends(xttsv2_factory.get_model)) -> list[str]:
     """
     获得 XTTS v2 模型所支持的语言列表
     """
-    return xtts_v2_model.get_languages()
+    return model.get_languages()
 
 
 @api.put(path="/xttsv2/tts")
-async def xttsv2_tts(content: UploadContent):
+async def xttsv2_tts(content: UploadContent, model: XTTSV2Model = Depends(xttsv2_factory.get_model)):
     """
     语音合成
     """
@@ -60,7 +63,7 @@ async def xttsv2_tts(content: UploadContent):
             data=np.array(content.wav_list).astype(content.dtype_name),
         )
 
-    return xtts_v2_model.text_to_speech(
+    return model.text_to_speech(
         text=content.text,
         language=content.language,
         speaker=content.speaker,
@@ -69,8 +72,8 @@ async def xttsv2_tts(content: UploadContent):
 
 
 @api.put(path="/tacotron2/tts")
-async def tacotron2_tts(content: UploadContent):
+async def tacotron2_tts(content: UploadContent, model: ZhTacotron2Model = Depends(zhtacotron2_factory.get_model)):
     """
     语音合成
     """
-    return zh_tacotron2_model.text_to_speech(text=content.text)
+    return model.text_to_speech(text=content.text)
