@@ -49,7 +49,7 @@ async def get_xttsv2_languages(model: XTTSV2Model = Depends(xttsv2_factory.get_m
     return model.get_languages()
 
 
-@api.put(path="/xttsv2/tts")
+@api.post(path="/xttsv2/tts")
 async def xttsv2_tts(content: UploadContent, model: XTTSV2Model = Depends(xttsv2_factory.get_model)):
     """
     语音合成
@@ -71,7 +71,7 @@ async def xttsv2_tts(content: UploadContent, model: XTTSV2Model = Depends(xttsv2
     )
 
 
-@api.put(path="/tacotron2/tts")
+@api.post(path="/tacotron2/tts")
 async def tacotron2_tts(content: UploadContent, model: ZhTacotron2Model = Depends(zhtacotron2_factory.get_model)):
     """
     语音合成

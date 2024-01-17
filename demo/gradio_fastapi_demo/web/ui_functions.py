@@ -4,7 +4,7 @@ Gradio 组件所需的方法
 import gradio as gr
 from numpy import ndarray
 
-from .api_requests import get_xttsv2_languages, get_xttsv2_speakers, send_put_tacotron2_tts, send_put_xttsv2_tts
+from .api_requests import get_xttsv2_languages, get_xttsv2_speakers, send_post_tacotron2_tts, send_post_xttsv2_tts
 
 
 def xttsv2_list_languages(url: str) -> gr.Dropdown:
@@ -31,7 +31,7 @@ def xttsv2_submit(
     wav_audio: tuple[int, ndarray] | None,
 ):
     """
-    发送 put 请求
+    发送 post 请求
     """
     if not text:
         raise gr.Error("文本不能为空！")
@@ -42,13 +42,13 @@ def xttsv2_submit(
     if speaker and wav_audio:
         speaker = None
         gr.Warning("使用语音克隆文件处理语音合成，不使用发言者选项。")
-    return send_put_xttsv2_tts(url, text, language, speaker, wav_audio)
+    return send_post_xttsv2_tts(url, text, language, speaker, wav_audio)
 
 
 def tacotron2_submit(url: str, text: str | None):
     """
-    发送 put 请求
+    发送 post 请求
     """
     if not text:
         raise gr.Error("文本不能为空！")
-    return send_put_tacotron2_tts(url, text)
+    return send_post_tacotron2_tts(url, text)
